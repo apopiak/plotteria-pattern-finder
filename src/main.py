@@ -12,7 +12,7 @@ import functools
 import sys
 
 def generateGraph(dimension, depth):
-    assert dimension > 1 # tuple cardinality like 3 = (1,1,1)
+    assert dimension == 3 # tuple cardinality like 3 = (1,1,1)
     assert depth > 1 # range of values eg 1..3
     graph = {}
     for (i,j,k) in itertools.product(range(depth), repeat=dimension):
@@ -22,7 +22,6 @@ def generateGraph(dimension, depth):
         }
     return graph
 
-global solutionCount
 global prettySolutionCount
 global printCount
 solutionCount = 0
@@ -44,7 +43,7 @@ def indexDefault(list, value, default):
 def isSolutionValid(solution, depth, dimension):
     #check whether 000 111 222 333 is equally spaced
     #solutionStr = solutionToStr(solution)
-    findings = [0] + [indexDefault(solution[2:], triple, -1) for triple in [(x,x,x) for x in range(1, depth)]]
+    findings = [0] + [indexDefault(solution[2:], tup, -1) for tup in [tuple((x,)*dimension) for x in range(1, depth)]]
     index = 0
     for i, val in enumerate(reversed(findings)):
         if val < 0: continue
@@ -64,20 +63,19 @@ def isSolutionValid(solution, depth, dimension):
 
 
 def findHamiltonBF(visited, graph, isValid):
-    global solutionCount
     global prettySolutionCount
     global printCount
     printCount += 1
     if printCount % 100_000 == 0:
-        print(solutionToStr(visited), end='\r')
+        #print(solutionToStr(visited), end='\r')
         printCount = 0
     if len(visited) >= len(graph.values()):
-        solutionCount +=1
-        #print(f"Solutions {prettySolutionCount}/{solutionCount}", end='\r')
         if isValid(visited):
             prettySolutionCount += 1
-            print(solutionToStr(visited))
-            #print(f"Solutions {prettySolutionCount}/{solutionCount}", end='\r')
+            if prettySolutionCount >= 20_000:
+                exit()
+            #print(solutionToStr(visited))
+            #print(f"Solutions: {prettySolutionCount}", end='\r')
             return [visited]
     elif not isValid(visited):
         return []
@@ -87,17 +85,16 @@ def findHamiltonBF(visited, graph, isValid):
     for next in graph[current]['out']:
         if not next in visited:
             solutions += findHamiltonBF(visited + [next], graph, isValid)
-    
     return solutions
 
 def main():
     dimension = 3
-    depth = 3
+    depth = 4
     graph = generateGraph(dimension, depth)
     visited = [(0,0,0)]
     solutions = findHamiltonBF(visited, graph, lambda x : isSolutionValid(x, depth, dimension))
     print(f"Solutions found: {len(solutions)}")
-
+    
     with open('solutions.txt','w') as file:
         file.writelines([solutionToStr(sol)+'\n' for sol in solutions])
 

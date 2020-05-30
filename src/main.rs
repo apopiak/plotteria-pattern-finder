@@ -87,7 +87,7 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref solution_count: Mutex<Box<usize>> = Mutex::new(Box::new(0));
+    static ref SOLUTION_COUNT: Mutex<Box<usize>> = Mutex::new(Box::new(0));
 }
 
 fn find_hamilton_bf<F>(visited: &Solution, graph: &Graph, is_valid: &F) -> Vec<Solution>
@@ -97,10 +97,10 @@ where
     let mut solutions = vec![];
     if visited.len() >= graph.values().count() {
         if is_valid(visited).valid() {
-            solution_count.lock().map(|mut s| {
+            let _ = SOLUTION_COUNT.lock().map(|mut s| {
                 **s += 1;
                 // println!("solution count: {}\r", s);
-                if **s > 50_000 {
+                if **s > 20_000 {
                     std::process::exit(0);
                 }
             });
